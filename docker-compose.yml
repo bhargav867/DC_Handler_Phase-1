@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      target: development
+    container_name: dc-handler-dev
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+      - /app/.build
+      - /app/vendor
+    env_file:
+      - .env
+    environment:
+      - ENV=development
+      - GOFLAGS=-v
+    networks:
+      - app-network
+    command: go run main.go
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Optional: Ollama service (uncomment when needed)
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   container_name: ollama-server
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollama:/root/.ollama
+  #   networks:
+  #     - app-network
+  #   environment:
+  #     - OLLAMA_HOST=0.0.0.0:11434
+
+networks:
+  app-network:
+    driver: bridge
+
+# volumes:
+#   ollama:
